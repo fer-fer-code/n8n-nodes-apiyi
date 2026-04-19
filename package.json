@@ -1,0 +1,37 @@
+{
+  "name": "n8n-nodes-apiyi",
+  "version": "0.1.0",
+  "description": "n8n community nodes for APIYI AI API platform - Chat, Image, Video, Embeddings, Batch",
+  "keywords": ["n8n-community-node-package", "n8n", "apiyi", "ai", "llm", "claude", "gpt", "gemini"],
+  "license": "MIT",
+  "homepage": "https://github.com/fer-fer-code/n8n-nodes-apiyi",
+  "author": {
+    "name": "Ramiz Fiziev",
+    "email": "krokusstudia2@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fer-fer-code/n8n-nodes-apiyi.git"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": ["dist/credentials/ApiyiApi.credentials.js"],
+    "nodes": [
+      "dist/nodes/ApiyiChat/ApiyiChat.node.js",
+      "dist/nodes/ApiyiImage/ApiyiImage.node.js",
+      "dist/nodes/ApiyiVideo/ApiyiVideo.node.js",
+      "dist/nodes/ApiyiBatch/ApiyiBatch.node.js",
+      "dist/nodes/ApiyiEmbedding/ApiyiEmbedding.node.js"
+    ]
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "n8n-workflow": "^2.13.1"
+  }
+}
