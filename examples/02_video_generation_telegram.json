@@ -1,0 +1,96 @@
+{
+  "name": "APIYI — Video Generation + Telegram Delivery",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 24 }] }
+      },
+      "id": "b1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "p1",
+              "name": "prompt",
+              "value": "A futuristic city at night with flying cars and holographic ads, cinematic 4K, neon lights reflecting on wet streets",
+              "type": "string"
+            },
+            {
+              "id": "p2",
+              "name": "chat_id",
+              "value": "YOUR_TELEGRAM_CHAT_ID",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "b1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Set Params",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "model": "kling-v1-6-pro",
+        "prompt": "={{ $json.prompt }}",
+        "duration": 5,
+        "aspectRatio": "16:9",
+        "waitForCompletion": true,
+        "pollIntervalSeconds": 10,
+        "maxWaitSeconds": 300
+      },
+      "id": "b1b2c3d4-0003-0003-0003-000000000003",
+      "name": "APIYI Video",
+      "type": "n8n-nodes-apiyi.apiyiVideo",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "apiyiApi": {
+          "id": "1",
+          "name": "APIYI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Set Params').item.json.chat_id }}",
+        "text": "=🎬 Daily AI Video\n\nPrompt: {{ $('Set Params').item.json.prompt }}\n\n🎥 {{ $json.video_url }}",
+        "additionalFields": {}
+      },
+      "id": "b1b2c3d4-0004-0004-0004-000000000004",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "2",
+          "name": "Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{ "node": "Set Params", "type": "main", "index": 0 }]]
+    },
+    "Set Params": {
+      "main": [[{ "node": "APIYI Video", "type": "main", "index": 0 }]]
+    },
+    "APIYI Video": {
+      "main": [[{ "node": "Telegram", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Generate a Kling 1.6 Pro video daily and deliver via Telegram. APIYI Video node auto-polls until completion."
+  },
+  "tags": []
+}

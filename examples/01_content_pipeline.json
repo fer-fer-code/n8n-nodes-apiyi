@@ -1,0 +1,125 @@
+{
+  "name": "APIYI — AI Content Pipeline (Chat + Image)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "field1",
+              "name": "topic",
+              "value": "autonomous AI agents in 2026",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Set Topic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-4-6",
+        "prompt": "=Write a compelling 150-word article intro about: {{ $json.topic }}. Be engaging and informative.",
+        "systemPrompt": "You are a tech journalist writing for a wide audience. Be clear, engaging, no jargon.",
+        "options": {
+          "maxTokens": 300,
+          "temperature": 0.8
+        }
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "APIYI Chat",
+      "type": "n8n-nodes-apiyi.apiyiChat",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "apiyiApi": {
+          "id": "1",
+          "name": "APIYI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "dall-e-3",
+        "prompt": "=Futuristic digital illustration for article about: {{ $('Set Topic').item.json.topic }}. Clean, professional, tech aesthetic. No text.",
+        "size": "1024x1024",
+        "quality": "standard"
+      },
+      "id": "a1b2c3d4-0004-0004-0004-000000000004",
+      "name": "APIYI Image",
+      "type": "n8n-nodes-apiyi.apiyiImage",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "credentials": {
+        "apiyiApi": {
+          "id": "1",
+          "name": "APIYI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "out1",
+              "name": "article_text",
+              "value": "={{ $('APIYI Chat').item.json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "out2",
+              "name": "image_url",
+              "value": "={{ $('APIYI Image').item.json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "out3",
+              "name": "topic",
+              "value": "={{ $('Set Topic').item.json.topic }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Combine Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Set Topic", "type": "main", "index": 0 }]]
+    },
+    "Set Topic": {
+      "main": [[{ "node": "APIYI Chat", "type": "main", "index": 0 }]]
+    },
+    "APIYI Chat": {
+      "main": [[{ "node": "APIYI Image", "type": "main", "index": 0 }]]
+    },
+    "APIYI Image": {
+      "main": [[{ "node": "Combine Output", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Generate article text with Claude Sonnet + matching image with DALL-E 3 for any topic."
+  },
+  "tags": []
+}

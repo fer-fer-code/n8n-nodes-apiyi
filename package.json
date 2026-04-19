@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-apiyi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "n8n community nodes for APIYI AI API platform - Chat, Image, Video, Embeddings, Batch",
   "keywords": ["n8n-community-node-package", "n8n", "apiyi", "ai", "llm", "claude", "gpt", "gemini"],
   "license": "MIT",

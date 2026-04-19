@@ -35,20 +35,25 @@ npm install n8n-nodes-apiyi
 
 ## Example Workflows
 
-### AI Content Pipeline (Chat + Image)
-```
-[Manual Trigger] → [APIYI Chat: write product description] → [APIYI Image: generate product photo] → [HTTP Request: save to CMS]
-```
+Importable JSON workflow files are in the [`examples/`](./examples/) folder. Import them in n8n: **Workflows → Import from File**.
 
-### Video Generation with Polling
+### 1. AI Content Pipeline (Chat + Image) — [`01_content_pipeline.json`](./examples/01_content_pipeline.json)
 ```
-[Schedule Trigger] → [Set: video prompt] → [APIYI Video: Kling 1.6 Pro, wait=true] → [Telegram: send video_url]
+Manual Trigger → Set Topic → APIYI Chat (Claude Sonnet) → APIYI Image (DALL-E 3) → Output
 ```
+Generates a 150-word article intro + matching illustration for any topic. Output includes `article_text` and `image_url`.
 
-### Semantic Search Embeddings
+### 2. Video Generation + Telegram Delivery — [`02_video_generation_telegram.json`](./examples/02_video_generation_telegram.json)
 ```
-[HTTP Webhook] → [APIYI Embedding: text-embedding-3-small] → [Supabase: vector upsert]
+Schedule Trigger (daily) → Set Params → APIYI Video (Kling 1.6 Pro, auto-poll) → Telegram
 ```
+Generates a cinematic AI video every day and sends it to Telegram. The Video node auto-polls until completion — no manual status checking.
+
+### 3. Semantic Search (RAG) with Embeddings — [`03_semantic_search_embeddings.json`](./examples/03_semantic_search_embeddings.json)
+```
+Webhook → APIYI Embedding (text-embedding-3-small) → Supabase pgvector search → APIYI Chat (RAG answer) → Response
+```
+Full RAG pipeline in 4 nodes: embed user query → vector similarity search → Claude generates grounded answer from context.
 
 ---
 

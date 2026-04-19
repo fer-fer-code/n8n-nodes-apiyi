@@ -1,0 +1,115 @@
+{
+  "name": "APIYI — Semantic Search with Embeddings + Supabase",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "search",
+        "responseMode": "lastNode"
+      },
+      "id": "c1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "text": "={{ $json.body.query }}",
+        "dimensions": 1536
+      },
+      "id": "c1b2c3d4-0002-0002-0002-000000000002",
+      "name": "APIYI Embedding",
+      "type": "n8n-nodes-apiyi.apiyiEmbedding",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "apiyiApi": {
+          "id": "1",
+          "name": "APIYI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT id, content, 1 - (embedding <=> '{{ JSON.stringify($json.embedding) }}'::vector) AS similarity\nFROM documents\nORDER BY similarity DESC\nLIMIT 5",
+        "options": {}
+      },
+      "id": "c1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Supabase Vector Search",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [680, 300],
+      "credentials": {
+        "postgres": {
+          "id": "3",
+          "name": "Supabase DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-4-6",
+        "prompt": "=User query: {{ $('Webhook').item.json.body.query }}\n\nRelevant context:\n{{ $json.content }}\n\nAnswer the user's question based on the context above. Be concise and accurate.",
+        "options": { "maxTokens": 500 }
+      },
+      "id": "c1b2c3d4-0004-0004-0004-000000000004",
+      "name": "APIYI RAG Answer",
+      "type": "n8n-nodes-apiyi.apiyiChat",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "credentials": {
+        "apiyiApi": {
+          "id": "1",
+          "name": "APIYI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "r1",
+              "name": "answer",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "r2",
+              "name": "sources",
+              "value": "={{ $('Supabase Vector Search').all().map(i => i.json.id) }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "c1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "APIYI Embedding", "type": "main", "index": 0 }]]
+    },
+    "APIYI Embedding": {
+      "main": [[{ "node": "Supabase Vector Search", "type": "main", "index": 0 }]]
+    },
+    "Supabase Vector Search": {
+      "main": [[{ "node": "APIYI RAG Answer", "type": "main", "index": 0 }]]
+    },
+    "APIYI RAG Answer": {
+      "main": [[{ "node": "Format Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "RAG pipeline: embed query → Supabase vector search → Claude generates answer from context. Full semantic search in 4 nodes."
+  },
+  "tags": []
+}
